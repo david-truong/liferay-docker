@@ -2,7 +2,8 @@ FROM oracle-java7:latest
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ant \
-    curl
+    curl \
+    git
 
 ENV LIFERAY_COMMIT c0b01e5
 ENV LIFERAY_DOWNLOAD_URL https://github.com/liferay/liferay-portal/archive/${LIFERAY_COMMIT}.tar.gz
