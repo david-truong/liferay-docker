@@ -8,6 +8,8 @@ RUN chmod a+x /bundles/startup.sh
 
 WORKDIR /liferay-portal
 
+ENV ANT_OPTS "-Xmx2048m -XX:MaxPermSize=1024m"
+
 RUN ant clean && \
 	ant compile && \
 	ant -f build-dist.xml build-dist-tomcat && \
