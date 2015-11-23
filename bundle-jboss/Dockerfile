@@ -1,7 +1,7 @@
 FROM liferay-bundle-template:latest
 
-ENV APPSERVER tomcat
-ENV APPSERVER_VERSION tomcat-7.0.62
+ENV APPSERVER jboss
+ENV APPSERVER_VERSION jboss-eap-6.4
 ENV ANT_OPTS "-Xmx2048m -XX:MaxPermSize=1024m"
 
 RUN echo 'app.server.type='$APPSERVER > app.server.root.properties
@@ -12,9 +12,9 @@ RUN chmod a+x /bundles/scripts/startup.sh
 
 VOLUME /bundles/scripts/
 
-RUN	ant -f build-dist.xml build-dist-$APPSERVER && \
+RUN	ant -f build-dist.xml build-dist-$APPSERVER_VERSION && \
 	rm -rf /liferay-portal
 
-VOLUME /bundles/$APPSERVER_VERSION
+VOLUME /bundles/jboss-eap-6.4.0
 
 VOLUME /bundles/osgi

@@ -1,1 +1,0 @@
-docker run --volumes-from tomcat --volumes-from data -p 8080:8080 liferay-app
