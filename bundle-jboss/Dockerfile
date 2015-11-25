@@ -1,8 +1,8 @@
-FROM liferay-bundle-template:latest
+FROM liferay/bundle-base:latest
 
 ENV APPSERVER jboss
 ENV APPSERVER_VERSION jboss-eap-6.4
-ENV ANT_OPTS "-Xmx2048m -XX:MaxPermSize=1024m"
+ENV ANT_OPTS "-Xmx2048m"
 
 RUN echo 'app.server.type='$APPSERVER > app.server.root.properties
 
@@ -18,3 +18,7 @@ RUN	ant -f build-dist.xml build-dist-$APPSERVER_VERSION && \
 VOLUME /bundles/jboss-eap-6.4.0
 
 VOLUME /bundles/osgi
+
+EXPOSE 8080
+
+CMD /bundles/scripts/startup.sh

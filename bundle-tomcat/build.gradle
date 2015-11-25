@@ -1,0 +1,17 @@
+ext {
+	tomcatVersion = '7.0.62'
+}
+
+task taskCopyFilesForDocker(type: Copy) {
+	dependsOn "copyShellScript", "copyZip"
+}
+
+task copyZip(type: Copy) {
+	from        "build/libs/apache-tomcat-${tomcatVersion}.jar"
+	into        'build/docker'
+}
+
+task copyShellScript(type: Copy) {
+	from        "startup.sh"
+	into        'build/docker'
+}

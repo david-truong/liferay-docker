@@ -1,4 +1,4 @@
-FROM oracle-java7:latest
+FROM java:8
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ant \

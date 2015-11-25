@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker run --volumes-from bundle-jboss --volumes-from data-hsdb -p 8080:8080 liferay-app
+docker run --v /bundles -p 8080:8080 liferay/bundle-jboss

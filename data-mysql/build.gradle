@@ -1,0 +1,3 @@
+task taskCopyFilesForDocker(type: Copy) {
+//    Nothing to copy, but required by docker build
+}
