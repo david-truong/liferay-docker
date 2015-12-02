@@ -1,0 +1,16 @@
+appserver:
+  image: liferay/bundle-tomcat
+  links:
+    - database
+  ports:
+    - "8080:8080"
+  volumes:
+    - ./portal-ext.properties:/bundles/portal-ext.properties
+    - ./mysql.jar:/bundles/tomcat-7.0.62/lib/mysql.jar
+database:
+  image: mysql:5.7
+  environment:
+    - MYSQL_ROOT_PASSWORD=root
+    - MYSQL_DATABASE=lportal
+  volumes:
+    - /bundles/data
