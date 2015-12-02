@@ -19,53 +19,56 @@ subprojects {
 
 	afterEvaluate { project ->
 		if (new File(project.projectDir, 'Dockerfile').exists()) {
-			task buildImage(type: Exec, description: 'build Docker image') {
-				executable 'docker'
-				args 'build'
-				args '--tag=' + project.imageName
-				args '.'
+			task buildImage(description: 'build Docker image') << {
+				def p = "docker build --tag=${project.imageName} .".execute()
+
+				p.in.eachLine { line ->
+					println line
+				}
 			}
 
 			if (project.bundle) {
-				task create(type: Exec, description: 'create Docker container') {
+				task start(description: 'start Docker container') {
 					dependsOn buildImage
 
-					executable 'docker'
-					args 'run'
-					args '-d'
-					args '--name=' + project.containerName
-					args '--publish=8080:8080'
-					args project.imageName
+					doLast {
+						try {
+							def p = "docker start ${project.containerName}".execute()
+
+							p.exitValue()
+						}
+						catch (Exception e) {
+							"docker run -d --name=${project.containerName} --publish=8080:8080 ${project.imageName}".execute()
+						}
+					}
 				}
 
-				task start(type: Exec, description: 'start an existing Docker container') {
-					executable 'docker'
-					args 'start'
-					args project.containerName
+				task stop(description: 'stop Docker container') << {
+					"docker stop ${project.containerName}".execute()
 				}
 
-				task stop(type: Exec, description: 'stop Docker container') {
-					executable 'docker'
-					args 'stop'
-					args project.containerName
-				}
-
-				task remove(type: Exec, description: 'remove the Docker container') {
-					executable 'docker'
-					args 'rm'
-					args project.containerName
+				task remove(description: 'remove the Docker container') << {
+					"docker rm -fv ${project.containerName}".execute()
 				}
 			}
 		}
 		if (new File(project.projectDir, 'docker-compose.yml').exists()) {
-			task start(type: Exec, description: 'start an existing Docker container') {
-				executable 'docker-compose'
-				args 'up'
+			task start(description: 'start an existing Docker container') << {
+				"docker-compose up".execute()
 			}
 
-			task rm(type: Exec, description: 'delete existing Docker container') {
-				executable 'docker-compose'
-				args 'rm'
+			task stop(description: 'start an existing Docker container') << {
+				def process ="docker-compose stop".execute()
+				println "${process.text}"
+			}
+
+			task remove(description: 'start an existing Docker container') {
+				dependsOn stop
+
+				doLast {
+					def process ="docker-compose rm -fv".execute()
+					println "${process.text}"
+				}
 			}
 		}
 	}
