@@ -25,7 +25,7 @@ RUN	mkdir /bundles \
 	&& mkdir /liferay-portal \
 	&& tar -xvzf liferay-portal.tar.gz -C /liferay-portal --strip-components=1 \
 	&& rm liferay-portal.tar.gz \
-	&& cd liferay-portal \
+	&& cd /liferay-portal \
 	&& ant clean \
 	&& ant compile \
 	&& ant -f build-dist.xml build-dist-$APPSERVER \
