@@ -4,5 +4,4 @@ apply plugin: 'java'
 jettyRun {
 	contextPath = ''
 	daemon = true
-	httpPort = 60608
 }

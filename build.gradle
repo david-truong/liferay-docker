@@ -1,14 +1,20 @@
 def executeOnShell(String command) {
-	return executeOnShell(command, new File(System.properties.'user.dir'))
+	return executeOnShell(command, true)
 }
 
-def executeOnShell(String command, File workingDir) {
+def executeOnShell(String command, boolean showOutput) {
+	return executeOnShell(command, new File(System.properties.'user.dir'), showOutput)
+}
+
+def executeOnShell(String command, File workingDir, boolean showOutput) {
 	println command
 	def process = new ProcessBuilder(addShellPrefix(command))
 			.directory(workingDir)
 			.redirectErrorStream(true)
 			.start()
-	process.inputStream.eachLine {println it}
+	if(showOutput) {
+		process.inputStream.eachLine {println it}
+	}
 	process.waitFor();
 	return process.exitValue()
 }
@@ -23,26 +29,33 @@ def addShellPrefix(String command) {
 
 allprojects {
 	task cleanImages (description: "delete all untagged images") << {
-		def p = 'docker images -q --filter "dangling=true" | xargs docker rmi'.execute()
-
-		p.in.eachLine { line ->
-			println line
-		}
+		executeOnShell('docker images -q --filter "dangling=true" | xargs docker rmi')
 	}
 }
 
 subprojects {
 	ext {
+		liferayCommit = '29bd13e'
 		imageName = 'liferay/' + name
 		containerName = name
 		bundle = false
 		containerId = ''
+		appserver = ''
+		version = ''
+		cmd = ''
+		files = []
+		distCommand = "${appserver}"
 	}
 
 	afterEvaluate { project ->
 		if (name.startsWith("bundle-")) {
-			task createTemplate(description: 'build bundle template') << {
+			task createTemplate(dependsOn: ['copyTemplateFiles'], description: 'build bundle template') << {
 
+			}
+
+			task copyTemplateFiles(type: Copy, description: 'copy template files') << {
+				from '../bundleTemplate/*'
+				into projectDir
 			}
 		}
 		if (new File(project.projectDir, 'Dockerfile').exists()) {
@@ -52,31 +65,27 @@ subprojects {
 
 			if (project.bundle) {
 				task start(description: 'start Docker container') << {
-					try {
-						def p = "docker start ${project.containerName}".execute()
+					def exitValue = executeOnShell("docker start ${project.containerName}", false)
 
-						p.exitValue()
+					if (exitValue != 0) {
+						println "Container ${project.containerName} does not exist! Creating it now..."
+						exitValue = executeOnShell("docker run -d --name=${project.containerName} --publish=8080:8080 ${project.imageName}", false)
 					}
-					catch (Exception e) {
-						def p = "docker run -d --name=${project.containerName} --publish=8080:8080 ${project.imageName}".execute()
 
-						try {
-							p.exitValue()
-
-							println p.err.text
-						}
-						catch(Exception ne) {
-							println "Starting ${project.containerName}"
-						}
+					if (exitValue != 0) {
+						println "Failed to start ${project.containerName}"
+					}
+					else {
+						println "Starting ${project.containerName}"
 					}
 				}
 
 				task stop(description: 'stop Docker container') << {
-					"docker stop ${project.containerName}".execute()
+					executeOnShell("docker stop ${project.containerName}")
 				}
 
 				task remove(description: 'remove the Docker container') << {
-					"docker rm -fv ${project.containerName}".execute()
+					executeOnShell("docker rm -fv ${project.containerName}")
 				}
 			}
 		}
@@ -86,17 +95,11 @@ subprojects {
 			}
 
 			task stop(description: 'start an existing Docker container') << {
-				def process ="docker-compose stop".execute()
-				println "${process.text}"
+				executeOnShell("docker-compose stop")
 			}
 
-			task remove(description: 'start an existing Docker container') {
-				dependsOn stop
-
-				doLast {
-					def process ="docker-compose rm -fv".execute()
-					println "${process.text}"
-				}
+			task remove(dependsOn: ['stop'], description: 'start an existing Docker container') << {
+				executeOnShell("docker-compose rm -fv")
 			}
 		}
 	}
