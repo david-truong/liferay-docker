@@ -1,12 +1,34 @@
-task getDBContainers(type: Exec, description: 'get the db containers') {
-	executable 'docker'
-	args 'ps'
-	args '-aq'
-	args '--filter="name=database-"'
+def executeOnShell(String command) {
+	return executeOnShell(command, new File(System.properties.'user.dir'))
+}
 
-	standardOutput = new ByteArrayOutputStream()
+def executeOnShell(String command, File workingDir) {
+	println command
+	def process = new ProcessBuilder(addShellPrefix(command))
+			.directory(workingDir)
+			.redirectErrorStream(true)
+			.start()
+	process.inputStream.eachLine {println it}
+	process.waitFor();
+	return process.exitValue()
+}
 
-	ext.containers = standardOutput.toString().split('\n')
+def addShellPrefix(String command) {
+	def commandArray = new String[3]
+	commandArray[0] = "sh"
+	commandArray[1] = "-c"
+	commandArray[2] = command
+	return commandArray
+}
+
+allprojects {
+	task cleanImages (description: "delete all untagged images") << {
+		def p = 'docker images -q --filter "dangling=true" | xargs docker rmi'.execute()
+
+		p.in.eachLine { line ->
+			println line
+		}
+	}
 }
 
 subprojects {
@@ -18,27 +40,33 @@ subprojects {
 	}
 
 	afterEvaluate { project ->
-		if (new File(project.projectDir, 'Dockerfile').exists()) {
-			task buildImage(description: 'build Docker image') << {
-				def p = "docker build --tag=${project.imageName} .".execute()
+		if (name.startsWith("bundle-")) {
+			task createTemplate(description: 'build bundle template') << {
 
-				p.in.eachLine { line ->
-					println line
-				}
+			}
+		}
+		if (new File(project.projectDir, 'Dockerfile').exists()) {
+			task buildImage(dependsOn: [':file-server:jettyRun'], description: 'build Docker image') << {
+				executeOnShell("docker build --tag=${project.imageName} .")
 			}
 
 			if (project.bundle) {
-				task start(description: 'start Docker container') {
-					dependsOn buildImage
+				task start(description: 'start Docker container') << {
+					try {
+						def p = "docker start ${project.containerName}".execute()
 
-					doLast {
+						p.exitValue()
+					}
+					catch (Exception e) {
+						def p = "docker run -d --name=${project.containerName} --publish=8080:8080 ${project.imageName}".execute()
+
 						try {
-							def p = "docker start ${project.containerName}".execute()
-
 							p.exitValue()
+
+							println p.err.text
 						}
-						catch (Exception e) {
-							"docker run -d --name=${project.containerName} --publish=8080:8080 ${project.imageName}".execute()
+						catch(Exception ne) {
+							println "Starting ${project.containerName}"
 						}
 					}
 				}

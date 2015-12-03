@@ -8,7 +8,13 @@ ENV APPSERVER_ZIP wildfly-9.0.1.Final.zip
 
 COPY $APPSERVER_ZIP /bundles/
 
-RUN	ant -f build-dist.xml build-dist-$APPSERVER && \
+RUN	mkdir /liferay-portal && \
+	tar -xvzf liferay-portal.tar.gz -C /liferay-portal --strip-components=1 && \
+	rm liferay-portal.tar.gz && \
+	cd liferay-portal && \
+	ant clean && \
+	ant compile && \
+	ant -f build-dist.xml build-dist-$APPSERVER && \
 	rm -rf /liferay-portal /bundles/$APPSERVER_ZIP
 
 EXPOSE 8080

@@ -18,9 +18,11 @@ include 'services:webservice'
 
 rootProject.name = 'liferay-docker'
 
+include 'file-server'
 include 'bundle-base'
 include 'bundle-jboss'
 include 'bundle-tomcat'
+//include 'bundle-websphere'
 include 'bundle-wildfly'
 include 'tomcat-mariadb'
 include 'tomcat-mysql'
