@@ -1,0 +1,7 @@
+database:
+  image: postgres:9.4
+  environment:
+    - POSTGRES_PASSWORD=postgres
+  volumes:
+    - ./postgres_init.sql:/docker-entrypoint-initdb.d/postgres_init.sql
+    - /bundles/data

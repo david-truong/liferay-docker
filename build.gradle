@@ -31,5 +31,9 @@ allprojects {
 	task cleanImages (description: "delete all untagged images") << {
 		executeOnShell('docker images -q --filter "dangling=true" | xargs docker rmi')
 	}
+
+	task images (description: "delete all untagged images") << {
+		executeOnShell('docker images')
+	}
 }
 

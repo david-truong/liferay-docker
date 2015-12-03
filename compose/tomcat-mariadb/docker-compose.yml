@@ -1,18 +1,15 @@
 appserver:
-  image: liferay/bundle-tomcat
+  extends:
+    file: ../base/tomcat.yml
+    service: appserver
   links:
     - database
-  ports:
-    - "8080:8080"
   volumes:
-    - ./portal-ext.properties:/bundles/portal-ext.properties
-    - ./mariadb.jar:/bundles/tomcat-7.0.62/lib/mariadb.jar
+    - ../configs/portal-ext.properties:/bundles/portal-ext.properties
+    - ../drivers/mariadb.jar:/bundles/tomcat-7.0.62/lib/mariadb.jar
   volumes_from:
     - database
 database:
-  image: mariadb:10.0
-  environment:
-    - MYSQL_ROOT_PASSWORD=root
-    - MYSQL_DATABASE=lportal
-  volumes:
-    - /bundles/data
+  extends:
+    file: ../base/mariadb.yml
+    service: database

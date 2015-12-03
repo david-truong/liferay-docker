@@ -28,14 +28,14 @@ ENV APPSERVER_FILE_8 was.repo.8550.developers.ilan_part3.zip
 RUN	mkdir /bundles \
 	&& cd /bundles \
 	&& curl -kLO "http://192.168.99.1:8080/portal-setup-wizard.properties" \
-	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_FILE_1" \
-	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_FILE_2" \
-	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_FILE_3" \
-	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_FILE_4" \
-	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_FILE_5" \
-	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_FILE_6" \
-	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_FILE_7" \
-	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_FILE_8" \
+	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_VERSION/$APPSERVER_FILE_1" \
+	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_VERSION/$APPSERVER_FILE_2" \
+	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_VERSION/$APPSERVER_FILE_3" \
+	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_VERSION/$APPSERVER_FILE_4" \
+	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_VERSION/$APPSERVER_FILE_5" \
+	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_VERSION/$APPSERVER_FILE_6" \
+	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_VERSION/$APPSERVER_FILE_7" \
+	&& curl -kLO "http://192.168.99.1:8080/$APPSERVER_VERSION/$APPSERVER_FILE_8" \
 	&& curl -kL "$LIFERAY_DOWNLOAD_URL" -o liferay-portal.tar.gz \
 	&& mkdir /liferay-portal \
 	&& tar -xvzf liferay-portal.tar.gz -C /liferay-portal --strip-components=1 \
