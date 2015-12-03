@@ -1,0 +1,8 @@
+ext {
+	bundle = true
+	appserver = 'jboss-eap'
+	version = '6.4.0'
+	cmd = '/bundles/$APPSERVER/bin/catalina.sh run'
+	files = ["${appserver}-${version}.zip"]
+	distCommand = "${appserver}-6.4"
+}
