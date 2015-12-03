@@ -1,0 +1,7 @@
+apply plugin: 'jetty'
+apply plugin: 'java'
+
+jettyRun {
+	contextPath = ''
+	daemon = true
+}

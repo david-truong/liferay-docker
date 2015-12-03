@@ -1,0 +1,15 @@
+appserver:
+  extends:
+    file: ../base/tomcat.yml
+    service: appserver
+  links:
+    - database
+  volumes:
+    - ../configs/portal-ext.properties:/bundles/portal-ext.properties
+    - ../drivers/mariadb.jar:/bundles/tomcat-7.0.62/lib/mariadb.jar
+  volumes_from:
+    - database
+database:
+  extends:
+    file: ../base/mariadb.yml
+    service: database

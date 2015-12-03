@@ -1,0 +1,17 @@
+subprojects {
+	afterEvaluate { project ->
+		if (new File(project.projectDir, 'docker-compose.yml').exists()) {
+			task start(description: 'start an existing Docker container') << {
+				executeOnShell("docker-compose up -d")
+			}
+
+			task stop(description: 'start an existing Docker container') << {
+				executeOnShell("docker-compose stop")
+			}
+
+			task remove(dependsOn: ['stop'], description: 'start an existing Docker container') << {
+				executeOnShell("docker-compose rm -fv")
+			}
+		}
+	}
+}

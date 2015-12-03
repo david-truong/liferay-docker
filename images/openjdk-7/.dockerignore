@@ -1,0 +1,5 @@
+.dockerignore
+.gitignore
+build.gradle
+Dockerfile
+*.zip

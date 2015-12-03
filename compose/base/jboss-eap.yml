@@ -1,0 +1,4 @@
+appserver:
+  image: liferay/jboss-eap
+  ports:
+    - "8080:8080"

@@ -1,0 +1,15 @@
+appserver:
+  extends:
+    file: ../base/tomcat.yml
+    service: appserver
+  links:
+    - database
+  volumes:
+    - ../configs/mysql.properties:/bundles/portal-ext.properties
+    - ../drivers/mysql.jar:/bundles/tomcat-7.0.62/lib/mysql.jar
+  volumes_from:
+    - database
+database:
+  extends:
+      file: ../base/mysql.yml
+      service: database
