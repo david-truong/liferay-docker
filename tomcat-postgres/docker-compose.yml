@@ -7,6 +7,8 @@ appserver:
   volumes:
     - ./portal-ext.properties:/bundles/portal-ext.properties
     - ./postgresql.jar:/bundles/tomcat-7.0.62/lib/postgresql.jar
+  volumes_from:
+    - database
 database:
   image: postgres:9.4
   environment:
