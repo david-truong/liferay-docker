@@ -6,6 +6,7 @@ appserver:
     - database
   volumes:
     - ../configs/mysql.properties:/bundles/portal-ext.properties
+    - ../configs/elasticsearch.properties:/bundles/osgi/configs/com.liferay.portal.search.elasticsearch.configuration.ElasticsearchConfiguration.cfg
     - ../drivers/mysql.jar:/bundles/tomcat-7.0.62/lib/mysql.jar
   volumes_from:
     - database
@@ -13,3 +14,7 @@ database:
   extends:
     file: ../base/mysql.yml
     service: database
+search:
+  extends:
+    file: ../base/elasticsearch.yml
+    service: search

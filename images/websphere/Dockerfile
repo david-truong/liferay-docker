@@ -45,7 +45,7 @@ RUN	mkdir /bundles \
 	&& ln -s /bin/bash /bin/sh \
 	&& ant clean \
 	&& ant compile \
-	&& ant -f build-dist.xml build-dist-$APPSERVER_VERSION \
+	&& ant -f build-dist.xml build-dist-$APPSERVER \
 	&& cd / \
 	&& rm -rf /tmp/* /var/tmp/* /liferay-portal /bundles/*.zip \
 	&& rm /bin/sh \

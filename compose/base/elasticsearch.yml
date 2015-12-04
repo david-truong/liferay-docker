@@ -1,0 +1,3 @@
+search:
+  image: elasticsearch:1.7
+  command: elasticsearch --cluster.name LiferayElasticsearchCluster
