@@ -1,0 +1,6 @@
+ext {
+	appServerVersion = "6.4.0"
+	cmd = "/bundles/${appServer}-${appServerVersion}/bin/standalone.sh -b 0.0.0.0"
+	distCommand = "${appServer}-6.4"
+	files = ["${appServer}-${appServerVersion}.zip"]
+}

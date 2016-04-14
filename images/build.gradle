@@ -1,38 +1,50 @@
 subprojects {
-	ext {
-		appserver = name
-		cmd = ''
-		containerName = name
-		distCommand = "${appserver}"
-		imageName = 'liferay/' + name
-		liferayCommit = '29bd13e'
-		version = ''
-		files = []
-	}
-
 	afterEvaluate { project ->
-		task createTemplate(dependsOn: ['copyTemplateFiles'], description: 'build bundle template') << {
-
-		}
-
-		task copyTemplateFiles(type: Copy, description: 'copy template files') << {
-			from '../bundleTemplate/*'
-			into projectDir
-		}
 		if (new File(project.projectDir, 'Dockerfile').exists()) {
-			task buildImage(dependsOn: [':file-server:jettyRun'], description: 'build Docker image') << {
-				executeOnShell("docker build --tag=${project.imageName} ${project.projectDir}")
+			task build(dependsOn: ['buildImage'])
+
+			task buildImage(dependsOn: [':file-server:jettyRun'], description: 'build Docker image', type: Exec) {
+				def tag = project.imageName
+
+				if (dockerRepo) {
+					tag = dockerRepo + File.separator + project.imageName
+				}
+
+				commandLine 'cmd', '/c', "docker build --tag=${tag} ${project.projectDir}"
+				commandLine 'bash', '-c', "docker build --tag=${tag} ${project.projectDir}"
+			}
+
+			task push(dependsOn: ['buildImage'], description: 'push image to docker repo') << {
+				def tag = project.imageName
+
+				if (dockerRepo) {
+					tag = dockerRepo + File.separator + project.imageName
+				}
+
+				commandLine 'cmd', '/c', "docker push ${tag}"
+				commandLine 'bash', '-c', "docker push ${tag}"
+			}
+
+			task run(description: 'start Docker container', type: Exec) {
+				commandLine 'cmd', '/c', "docker run -d --name=${project.imageName} --publish=8080:8080 ${project.imageName}"
+				commandLine 'bash', '-c', "docker run -d --name=${project.imageName} --publish=8080:8080 ${project.imageName}"
 			}
 
 			task start(description: 'start Docker container') << {
-				def exitValue = executeOnShell("docker start ${project.containerName}", false)
+				def exitResult = exec {
+					commandLine 'cmd', '/c', "docker start ${project.imageName}"
+					commandLine 'bash', '-c', "docker start ${project.imageName}"
+				}.execResult
 
-				if (exitValue != 0) {
-					println "Container ${project.containerName} does not exist! Creating it now..."
-					exitValue = executeOnShell("docker run -d --name=${project.containerName} --publish=8080:8080 ${project.imageName}", false)
+				if (execResult != 0) {
+					println "Container ${project.imageName} does not exist! Creating it now..."
+					exitResult = exec {
+						commandLine 'cmd', '/c', "docker run -d --name=${project.imageName} --publish=8080:8080 ${project.imageName}"
+						commandLine 'bash', '-c', "docker run -d --name=${project.imageName} --publish=8080:8080 ${project.imageName}"
+					}.execResult
 				}
 
-				if (exitValue != 0) {
+				if (exitResult != 0) {
 					println "Failed to start ${project.containerName}"
 				}
 				else {
@@ -40,14 +52,47 @@ subprojects {
 				}
 			}
 
-			task stop(description: 'stop Docker container') << {
-				executeOnShell("docker stop ${project.containerName}")
+			task stop(description: 'stop Docker container', type: Exec) {
+				commandLine 'cmd', '/c', "docker stop ${project.imageName}"
+				commandLine 'bash', '-c', "docker stop ${project.imageName}"
 			}
 
-			task remove(description: 'remove the Docker container') << {
-				executeOnShell("docker rm -fv ${project.containerName}")
+			task remove(description: 'remove the Docker container', type: Exec) {
+				commandLine 'cmd', '/c', "docker rm -fv ${project.imageName}"
+				commandLine 'bash', '-c', "docker rm -fv ${project.imageName}"
 			}
 		}
 	}
 }
 
+def defaultCommand(String command) {
+	"CMD $command\n\n"
+}
+
+def exposePort(int port) {
+	"EXPOSE $port\n\n"
+}
+
+def from(String base) {
+	from(base, "latest")
+}
+
+def from(String base, version) {
+	"FROM $base:$version\n\n"
+}
+
+def runCommand(String command) {
+	"RUN $command\n\n"
+}
+
+def runCommand(List commands) {
+	runCommand commands.join(" && ")
+}
+
+def setEnvironment(String name, String value) {
+	"ENV $name $value\n\n"
+}
+
+def volume(String path) {
+	"VOLUME $path\n\n"
+}

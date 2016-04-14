@@ -1,39 +1,22 @@
-def executeOnShell(String command) {
-	return executeOnShell(command, true)
-}
-
-def executeOnShell(String command, boolean showOutput) {
-	return executeOnShell(command, new File(System.properties.'user.dir'), showOutput)
-}
-
-def executeOnShell(String command, File workingDir, boolean showOutput) {
-	println command
-	def process = new ProcessBuilder(addShellPrefix(command))
-			.directory(workingDir)
-			.redirectErrorStream(true)
-			.start()
-	if(showOutput) {
-		process.inputStream.eachLine {println it}
-	}
-	process.waitFor();
-	return process.exitValue()
-}
-
-def addShellPrefix(String command) {
-	def commandArray = new String[3]
-	commandArray[0] = "sh"
-	commandArray[1] = "-c"
-	commandArray[2] = command
-	return commandArray
-}
-
 allprojects {
-	task cleanImages (description: "delete all untagged images") << {
-		executeOnShell('docker images -q --filter "dangling=true" | xargs docker rmi')
+	ext {
+		dockerRepo = 'david-truong-docker-registry.bintray.io'
 	}
 
-	task images (description: "delete all untagged images") << {
-		executeOnShell('docker images')
+	task clean(dependsOn: ['cleanImages', 'cleanVolumes'])
+
+	task cleanImages (description: "delete all untagged images", type: Exec) {
+		commandLine 'cmd', '/c', 'docker images -q --filter "dangling=true" | xargs docker rmi'
+		commandLine 'bash', '-c', 'docker images -q --filter "dangling=true" | xargs docker rmi'
+	}
+
+	task cleanVolumes (description: "clean volumes", type: Exec) {
+		commandLine 'cmd', '/c', 'docker volume ls -qf dangling=true | xargs docker volume rm'
+		commandLine 'bash', '-c', 'docker volume ls -qf dangling=true | xargs docker volume rm'
+	}
+
+	task images (description: "delete all untagged images", type: Exec) {
+		commandLine 'cmd', '/c', 'docker images'
+		commandLine 'bash', '-c', 'docker images'
 	}
 }
-

@@ -1,0 +1,6 @@
+ext {
+	appServerVersion = "7.0.62"
+	cmd = "/bundles/${appServer}-${appServerVersion}/bin/catalina.sh run"
+	distCommand = appServer
+	files = ["apache-${appServer}-${appServerVersion}.zip"]
+}

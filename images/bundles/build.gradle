@@ -1,0 +1,61 @@
+subprojects {
+	ext {
+		appServer = name
+		appServerVersion = ''
+		base = [image:"java", version:"7"]
+		cmd = ''
+		distCommand = appServer
+		imageName = 'liferay/' + name
+		files = []
+	}
+
+	task createDockerfile(description: 'build bundle template')
+
+	afterEvaluate { project ->
+		buildImage {
+			dependsOn createDockerfile
+		}
+
+		createDockerfile << {
+			def dockerfile = new File('Dockerfile')
+
+			if (dockerfile.exists()) {
+				def now = Calendar.instance.time.time
+				dockerfile.renameTo("Dockerfile.${now}")
+				dockerfile = new File('Dockerfile')
+			}
+
+			def curlFiles = project.files.collect {
+				"curl -kLO 'http://192.168.99.1:8080/${project.appServer}-${project.appServerVersion}/${it}'"
+			}
+
+			dockerfile << from(project.base.image, project.base.version)
+			dockerfile << runCommand(["apt-get update && apt-get install -y --no-install-recommends ant curl", "apt-get clean", "rm -rf /var/lib/apt/lists/*"])
+			dockerfile << setEnvironment("ANT_OPTS", "'-Xms3072m -Xmx3072m -XX:MaxPermSize=786m'")
+			dockerfile << setEnvironment("JAVA_HOME", "/usr/lib/jvm/java-7-openjdk-amd64")
+			dockerfile << runCommand(
+				["mkdir /bundles",
+				 "cd /bundles",
+				 "curl -kLO 'http://192.168.99.1:8080/portal-setup-wizard.properties'"] +
+				curlFiles +
+				["curl -kLO 'http://192.168.99.1:8080/liferay-portal-master.tar.gz'",
+				 "mkdir /liferay-portal",
+				 "tar -xvzf liferay-portal-master.tar.gz -C /liferay-portal --strip-components=1",
+				 "rm liferay-portal-master.tar.gz",
+				 "cd /liferay-portal",
+//				 "echo 'jsp.precompile=on' > build.root.properties",
+				 "ant clean",
+				 "ant compile",
+				 "ant -f build-dist.xml build-dist-${project.distCommand}",
+				 "cd /",
+				 "rm -rf /tmp/* /var/tmp/* /liferay-portal /bundles/*.zip"]
+			)
+
+			dockerfile << volume('/bundles/data')
+
+			dockerfile << exposePort(8080)
+
+			dockerfile << defaultCommand(project.cmd)
+		}
+	}
+}

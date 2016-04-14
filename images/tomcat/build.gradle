@@ -1,8 +1,0 @@
-ext {
-	bundle = true
-	appserver = 'tomcat'
-	version = '7.0.62'
-	cmd = '/bundles/$APPSERVER/bin/catalina.sh run'
-	files = ["apache-${appserver}-${version}.zip"]
-//	distCommand = "${appserver}"
-}
